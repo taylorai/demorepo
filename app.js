@@ -12,7 +12,7 @@ document.getElementById('addCustomerForm').addEventListener('submit', async (e) 
     const email = document.getElementById('email').value;
     
     const { data, error } = await supabase
-        .from('public.customer')
+        .from('customer')
         .insert([
             { first_name: firstName, last_name: lastName, email: email }
         ]);
@@ -32,7 +32,7 @@ document.getElementById('updateCustomerForm').addEventListener('submit', async (
     const newEmail = document.getElementById('newEmail').value;
 
     const { data, error } = await supabase
-        .from('public.customer')
+        .from('customer')
         .update({ email: newEmail })
         .match({ id: id });
 
@@ -50,7 +50,7 @@ document.getElementById('deleteCustomerForm').addEventListener('submit', async (
     const id = document.getElementById('deleteId').value;
 
     const { data, error } = await supabase
-        .from('public.customer')
+        .from('customer')
         .delete()
         .match({ id: id });
 
@@ -64,7 +64,7 @@ document.getElementById('deleteCustomerForm').addEventListener('submit', async (
 // Load Customers
 async function loadCustomers() {
     const { data, error } = await supabase
-        .from('public.customer')
+        .from('customer')
         .select('id, first_name, last_name, email');
     
     if (error) {
