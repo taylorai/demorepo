@@ -20,11 +20,44 @@ document.getElementById('addCustomerForm').addEventListener('submit', async (e) 
     if (error) {
         console.error('Error inserting customer:', error);
     } else {
-        // Optionally, add new customer to the displayed list
-        const customerList = document.getElementById('customerList');
-        const listItem = document.createElement('li');
-        listItem.textContent = `${firstName} ${lastName} - ${email}`;
-        customerList.appendChild(listItem);
+        loadCustomers();
+    }
+});
+
+// Update Customer
+document.getElementById('updateCustomerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const id = document.getElementById('updateId').value;
+    const newEmail = document.getElementById('newEmail').value;
+
+    const { data, error } = await supabase
+        .from('public.customer')
+        .update({ email: newEmail })
+        .match({ id: id });
+
+    if (error) {
+        console.error('Error updating customer:', error);
+    } else {
+        loadCustomers();
+    }
+});
+
+// Delete Customer
+document.getElementById('deleteCustomerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const id = document.getElementById('deleteId').value;
+
+    const { data, error } = await supabase
+        .from('public.customer')
+        .delete()
+        .match({ id: id });
+
+    if (error) {
+        console.error('Error deleting customer:', error);
+    } else {
+        loadCustomers();
     }
 });
 
@@ -32,18 +65,21 @@ document.getElementById('addCustomerForm').addEventListener('submit', async (e) 
 async function loadCustomers() {
     const { data, error } = await supabase
         .from('public.customer')
-        .select('first_name, last_name, email');
+        .select('id, first_name, last_name, email');
     
     if (error) {
         console.error('Error loading customers:', error);
-    } else {
-        const customerList = document.getElementById('customerList');
-        data.forEach(customer => {
-            const listItem = document.createElement('li');
-            listItem.textContent = `${customer.first_name} ${customer.last_name} - ${customer.email}`;
-            customerList.appendChild(listItem);
-        });
+        return;
     }
+
+    const customerList = document.getElementById('customerList');
+    customerList.innerHTML = ''; // Clear the list
+    
+    data.forEach(customer => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${customer.id} - ${customer.first_name} ${customer.last_name} - ${customer.email}`;
+        customerList.appendChild(listItem);
+    });
 }
 
 loadCustomers();
