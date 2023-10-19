@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_ANON_KEY');
 
 function PaymentForm() {
   const [formData, setFormData] = useState({
@@ -7,7 +10,7 @@ function PaymentForm() {
     staff_id: '',
     rental_id: '',
     amount: '',
-    payment_date: new Date().toISOString().split("T")[0]  // default to today's date
+    payment_date: new Date().toISOString().split("T")[0]
   });
 
   const handleInputChange = (e) => {
@@ -18,29 +21,29 @@ function PaymentForm() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // API call for inserting the payment
-    fetch("/api/payments", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    })
-    .then(response => response.json())
-    .then(data => {
+    const { data, error } = await supabase
+      .from('payments')
+      .insert([formData]);
+
+    if (error) {
+      console.error("Error adding payment:", error);
+    } else {
       console.log("Payment added:", data);
-    });
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (formData.payment_id) {
-      fetch(`/api/payments/${formData.payment_id}`, {
-        method: "DELETE",
-      })
-      .then(response => response.json())
-      .then(data => {
+      const { data, error } = await supabase
+        .from('payments')
+        .delete()
+        .eq('payment_id', formData.payment_id);
+
+      if (error) {
+        console.error("Error deleting payment:", error);
+      } else {
         console.log("Payment deleted:", data);
         setFormData({
           payment_id: '',
@@ -50,33 +53,28 @@ function PaymentForm() {
           amount: '',
           payment_date: new Date().toISOString().split("T")[0]
         });
-      });
+      }
     }
   };
 
-  const handleUpdate = (field) => {
+  const handleUpdate = async (field) => {
     if (formData.payment_id) {
-      fetch(`/api/payments/${formData.payment_id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          [field]: formData[field]
-        }),
-      })
-      .then(response => response.json())
-      .then(data => {
+      const { data, error } = await supabase
+        .from('payments')
+        .update({ [field]: formData[field] })
+        .eq('payment_id', formData.payment_id);
+
+      if (error) {
+        console.error("Error updating payment:", error);
+      } else {
         console.log("Payment updated:", data);
-      });
+      }
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
       {/* Fields for Payment Form */}
-      {/* Add validation or dropdowns where needed */}
-      {/* Payment ID */}
       <div>
         <label>Payment ID:</label>
         <input 
@@ -86,8 +84,6 @@ function PaymentForm() {
           onChange={handleInputChange}
         />
       </div>
-
-      {/* Customer ID */}
       <div>
         <label>Customer ID:</label>
         <input 
@@ -97,8 +93,6 @@ function PaymentForm() {
           onChange={handleInputChange}
         />
       </div>
-
-      {/* Staff ID */}
       <div>
         <label>Staff ID:</label>
         <input 
@@ -108,13 +102,10 @@ function PaymentForm() {
           onChange={handleInputChange}
         />
       </div>
-
       {/* ... Other fields ... */}
-
       <button type="submit">Add Payment</button>
       <button type="button" onClick={handleDelete}>Delete Payment</button>
       <button type="button" onClick={() => handleUpdate('amount')}>Update Amount Only</button>
-      {/* Add more specific update buttons if needed */}
     </form>
   );
 }
