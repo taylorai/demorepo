@@ -24,7 +24,7 @@ function PaymentForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { data, error } = await supabase
-      .from('payments')
+      .from('payment')
       .insert([formData]);
 
     if (error) {
@@ -37,7 +37,7 @@ function PaymentForm() {
   const handleDelete = async () => {
     if (formData.payment_id) {
       const { data, error } = await supabase
-        .from('payments')
+        .from('payment')
         .delete()
         .eq('payment_id', formData.payment_id);
 
@@ -60,7 +60,7 @@ function PaymentForm() {
   const handleUpdate = async (field) => {
     if (formData.payment_id) {
       const { data, error } = await supabase
-        .from('payments')
+        .from('payment')
         .update({ [field]: formData[field] })
         .eq('payment_id', formData.payment_id);
 
